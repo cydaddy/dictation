@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받아쓰기 시험</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="test.css?v=2">
+
+</head>
+
+<body>
+    <div class="test-container">
+        <!-- 상단: 인식된 텍스트 표시 제거 (타이핑 모드에서는 불필요) -->
+
+        <!-- 메인: 문제 번호 및 진행 상황 -->
+        <div class="test-header">
+            <div class="problem-number kan-font" id="problemNumber">제 1 번</div>
+            <div class="phase-indicator" id="phaseIndicator">1단계: 함께 듣기</div>
+        </div>
+
+        <div class="test-body">
+            <!-- 정답 입력 영역 (타이핑) -->
+            <div class="input-area">
+                <input type="text" id="answerInput" class="answer-input" placeholder="정답을 입력하세요" autocomplete="off"
+                    spellcheck="false">
+            </div>
+
+            <!-- 네비게이션 버튼 - 3열 그리드로 일관된 레이아웃 -->
+            <div class="bottom-nav">
+                <div class="nav-left">
+                    <button id="prevBtn" class="control-btn nav-btn invisible">이전</button>
+                </div>
+                <div class="nav-center">
+                    <!-- 오디오 컨트롤 (검토 모드용) -->
+                    <div id="audioControls" style="display: none;">
+                        <button id="playBtn" class="control-btn play-btn">
+                            <span class="icon">🔊</span> 다시 듣기
+                        </button>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <button id="nextBtn" class="control-btn nav-btn next">다음</button>
+                    <button id="submitBtn" class="control-btn nav-btn submit hidden">제출하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 검토 모드 진입 알림 모달 -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <h2>1단계가 끝났습니다!</h2>
+            <p>이제 <strong>따로 듣기</strong> 시간입니다.</p>
+            <p>잘 모르겠거나 헷갈리는 문제는<br><strong>[다시 듣기]</strong> 버튼을 눌러 확인해보세요.</p>
+            <div class="modal-buttons">
+                <button id="startReviewBtn" class="modal-btn modal-primary">따로 듣기 시작</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="resultScreen" class="result-screen hidden">
+        <div class="result-card">
+            <h1>시험 완료!</h1>
+            <div class="score-display">
+                <span id="finalScore">100</span>점
+            </div>
+            <div id="resultList" class="result-list"></div>
+            <button onclick="window.location.href='/student.html'" class="home-btn return-btn">처음으로 돌아가기</button>
+        </div>
+    </div>
+
+    <script src="test.js"></script>
+</body>
+
+</html>

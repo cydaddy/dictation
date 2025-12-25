@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(npm install)",
+      "WebFetch(domain:www.upstage.ai)",
+      "Bash(npm start)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(git commit:*)",
+      "Bash(sqlite3:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:console.humelo.com)",
+      "Bash(tar:*)",
+      "Bash(server.js )",
+      "Bash(package.json )",
+      "Bash(package-lock.json )",
+      "Bash(.env.example )",
+      "Bash(.gitignore )",
+      "Bash(README.md )",
+      "Bash(public/)",
+      "Bash(.env )",
+      "Bash(node_modules/)",
+      "Bash(where:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

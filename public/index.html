@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받아쓰기 문제 생성기</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>받아쓰기 문제 생성기</h1>
+            <button id="viewSavedBtn" class="view-saved-btn">저장된 문제 보기</button>
+        </div>
+
+        <div class="form-section">
+            <div class="input-group">
+                <label for="inputs">출제 희망 단어, 표현</label>
+                <textarea id="inputs" placeholder="단어나 표현을 콤마(,)로 구분하여 입력하세요&#10;예: 친구, 학교, 즐겁게 놀다, 책을 읽다"
+                    rows="4"></textarea>
+                <p class="hint">콤마(,)로 구분하여 단어나 표현을 입력하세요</p>
+            </div>
+
+            <div class="input-group">
+                <label for="additionalRequests">기타 요청사항</label>
+                <textarea id="additionalRequests" placeholder="예: 과거형 문장으로 만들어주세요, 대화문 형식으로 작성해주세요" rows="4"></textarea>
+                <p class="hint">추가로 반영하고 싶은 요청사항을 자유롭게 입력하세요</p>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="count">생성할 문장 개수</label>
+                    <input type="number" id="count" value="5" min="1" max="20">
+                </div>
+                <div class="input-group">
+                    <label for="grade">대상 학년</label>
+                    <select id="grade">
+                        <option value="1">1학년</option>
+                        <option value="2">2학년</option>
+                        <option value="3" selected>3학년</option>
+                        <option value="4">4학년</option>
+                        <option value="5">5학년</option>
+                        <option value="6">6학년</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="generateBtn" class="generate-btn">문제 생성하기</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>문장을 생성하고 있습니다...</p>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <h2>생성된 받아쓰기 문제</h2>
+            <div id="sentencesList"></div>
+            <div class="action-buttons">
+                <button id="saveBtn" class="save-btn">문제 세트 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 저장 모달 -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>문제 세트 저장</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="modalTitle">문제 세트 제목</label>
+                    <input type="text" id="modalTitle" placeholder="예: 2학년 1학기 받아쓰기">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modalCancelBtn" class="modal-btn modal-cancel">취소</button>
+                <button id="modalSaveBtn" class="modal-btn modal-save">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제출 결과 대시보드</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="saved.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .dashboard-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .submissions-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .submissions-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .submissions-table th {
+            background: #f8f9fa;
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            color: #1a1a1a;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .submissions-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .submissions-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .score-perfect {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .score-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .score-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .score-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6c757d;
+        }
+
+        .detail-btn {
+            padding: 6px 12px;
+            background: #4d65ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .detail-btn:hover {
+            background: #3d55ef;
+        }
+
+        .detail-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #e9ecef;
+        }
+
+        .detail-item.correct {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .detail-item.wrong {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .detail-item-number {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .detail-item-text {
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title" id="dashboardTitle">제출 결과</h1>
+            <button class="view-saved-btn" onclick="history.back()">뒤로 가기</button>
+        </div>
+
+        <div id="submissionsContainer">
+            <div class="submissions-table" id="submissionsTable" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>학년</th>
+                            <th>반</th>
+                            <th>번호</th>
+                            <th>이름</th>
+                            <th>점수</th>
+                            <th>제출 시간</th>
+                            <th>상세보기</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsBody"></tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <p>아직 제출한 학생이 없습니다.</p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>제출 결과를 불러오고 있습니다...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 답안 상세 모달 -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h2 id="detailModalTitle">답안 상세</h2>
+                <span class="close" onclick="closeDetailModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1;">
+                <div id="detailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

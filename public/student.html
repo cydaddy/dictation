@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>받아쓰기 시험</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+
+        .student-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .student-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .info-form {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            padding: 14px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4d65ff;
+            box-shadow: 0 0 0 3px rgba(77, 101, 255, 0.1);
+        }
+
+        /* 숫자 입력 필드의 스피너(화살표) 숨김 */
+        .form-group input[type="number"]::-webkit-outer-spin-button,
+        .form-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .form-group input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .test-screen {
+            display: none;
+        }
+
+        .test-screen.active {
+            display: block;
+        }
+
+        .problem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .problem-number {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #4d65ff;
+        }
+
+        .progress {
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #4d65ff;
+            box-shadow: 0 0 0 3px rgba(77, 101, 255, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .result-screen.active {
+            display: block;
+        }
+
+        .result-score {
+            font-size: 4em;
+            font-weight: 700;
+            color: #4d65ff;
+            margin: 40px 0;
+        }
+
+        .result-details {
+            display: grid;
+            gap: 16px;
+            text-align: left;
+            margin-top: 40px;
+        }
+
+        .result-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #e9ecef;
+        }
+
+        .result-item.correct {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .result-item.wrong {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .result-item-number {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-item-text {
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="student-container">
+        <!-- 정보 입력 화면 -->
+        <div id="infoScreen" class="info-screen active">
+            <h1 class="student-title">받아쓰기 시험</h1>
+            <div class="info-form">
+                <div class="form-group">
+                    <label for="grade">학년</label>
+                    <input type="number" id="grade" min="1" max="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="classNum">반</label>
+                    <input type="number" id="classNum" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="studentNum">번호</label>
+                    <input type="number" id="studentNum" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="studentName">이름</label>
+                    <input type="text" id="studentName" required>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="startTestBtn" class="generate-btn">시험 시작</button>
+                <button id="viewResultBtn" class="result-btn">내 결과 보기</button>
+            </div>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="resultScreen" class="result-screen" style="display: none;">
+            <h1 class="student-title">내 시험 결과</h1>
+            <div class="score-display">
+                <span id="myScore">0</span>점
+            </div>
+            <div id="myResultList" class="result-list"></div>
+            <button id="backBtn" class="back-btn">돌아가기</button>
+        </div>
+    </div>
+
+    <style>
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .result-btn {
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: 2px solid #4d65ff;
+            background: white;
+            color: #4d65ff;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .result-btn:hover {
+            background: #4d65ff;
+            color: white;
+        }
+
+        .result-screen .score-display {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #4d65ff;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .result-screen .result-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            padding: 15px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .result-item.correct {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .result-item.wrong {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .result-number {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #2d3748;
+        }
+
+        .correct-mark {
+            color: #28a745;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .wrong-mark {
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .result-answers {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .answer-row {
+            display: flex;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .answer-label {
+            color: #718096;
+            font-weight: 600;
+            min-width: 45px;
+        }
+
+        .answer-text {
+            color: #2d3748;
+            flex: 1;
+        }
+
+        .correct-text {
+            color: #155724;
+        }
+
+        .wrong-text {
+            color: #721c24;
+        }
+
+        .back-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const session = urlParams.get('session');
+        const speed = urlParams.get('speed');
+
+        // 시험 시작 버튼
+        document.getElementById('startTestBtn').addEventListener('click', () => {
+            const grade = document.getElementById('grade').value;
+            const classNum = document.getElementById('classNum').value;
+            const studentNum = document.getElementById('studentNum').value;
+            const studentName = document.getElementById('studentName').value;
+
+            if (!grade || !classNum || !studentNum || !studentName) {
+                alert('모든 정보를 입력해주세요.');
+                return;
+            }
+
+            if (!session) {
+                alert('잘못된 접근입니다. 선생님이 보내준 링크로 다시 접속해주세요.');
+                return;
+            }
+
+            const nextUrl = `/test.html?session=${session}&grade=${grade}&class=${classNum}&num=${studentNum}&name=${encodeURIComponent(studentName)}&speed=${speed || 1.0}`;
+            window.location.href = nextUrl;
+        });
+
+        // 내 결과 보기 버튼
+        document.getElementById('viewResultBtn').addEventListener('click', async () => {
+            const grade = document.getElementById('grade').value;
+            const classNum = document.getElementById('classNum').value;
+            const studentNum = document.getElementById('studentNum').value;
+
+            if (!grade || !classNum || !studentNum) {
+                alert('학년, 반, 번호를 입력해주세요.');
+                return;
+            }
+
+            try {
+                // 세션이 있으면 해당 세션에서, 없으면 전체에서 최신 결과 조회
+                let url = `/api/my-result?grade=${grade}&classNum=${classNum}&studentNum=${studentNum}`;
+                if (session) {
+                    url += `&sessionId=${session}`;
+                }
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || '결과를 찾을 수 없습니다.');
+                    return;
+                }
+
+                // 결과 화면 표시
+                document.getElementById('infoScreen').style.display = 'none';
+                document.getElementById('resultScreen').style.display = 'block';
+
+                // 점수 표시
+                const scorePercent = Math.round((data.submission.score / data.submission.total) * 100);
+                document.getElementById('myScore').textContent = scorePercent;
+
+                // 결과 목록 표시
+                const resultList = document.getElementById('myResultList');
+                resultList.innerHTML = '';
+
+                data.answers.forEach(answer => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = `result-item ${answer.is_correct ? 'correct' : 'wrong'}`;
+
+                    const isCorrectText = answer.is_correct ? '✓' : '✗';
+                    const isCorrectClass = answer.is_correct ? 'correct-mark' : 'wrong-mark';
+
+                    resultItem.innerHTML = `
+                        <div class="result-header">
+                            <span class="result-number">${answer.sentence_number}번</span>
+                            <span class="${isCorrectClass}">${isCorrectText}</span>
+                        </div>
+                        <div class="result-answers">
+                            <div class="answer-row">
+                                <span class="answer-label">정답:</span>
+                                <span class="answer-text correct-text">${answer.correct_answer}</span>
+                            </div>
+                            <div class="answer-row">
+                                <span class="answer-label">내 답:</span>
+                                <span class="answer-text ${answer.is_correct ? '' : 'wrong-text'}">${answer.student_answer || '(미입력)'}</span>
+                            </div>
+                        </div>
+                    `;
+                    resultList.appendChild(resultItem);
+                });
+            } catch (error) {
+                console.error('결과 조회 오류:', error);
+                alert('결과 조회 중 오류가 발생했습니다.');
+            }
+        });
+
+        // 돌아가기 버튼
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('infoScreen').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
