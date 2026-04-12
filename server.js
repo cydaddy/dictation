@@ -101,53 +101,56 @@ db.exec(`
   )
 `);
 
-// 랜덤 보이스 선택 함수
+// 두 가지 보이스 (Chirp 3 HD: Achernar(여성), Achird(남성)) 번갈아가며 선택하기 위한 변수
+let currentVoiceIndex = 0;
+const voices = [
+  { name: '여성(Achernar)', id: 'ko-KR-Chirp3-HD-Achernar' },
+  { name: '남성(Achird)', id: 'ko-KR-Chirp3-HD-Achird' }
+];
+
+// 번갈아가며 보이스 선택 함수
 function getRandomVoice() {
-  const voices = ['시아', '효은', '희웅', '선우'];
-  return voices[Math.floor(Math.random() * voices.length)];
+  const selectedVoice = voices[currentVoiceIndex];
+  currentVoiceIndex = (currentVoiceIndex + 1) % voices.length;
+  return selectedVoice.id; // API에는 UUID를 던져야 하므로 id 반환
 }
 
-// Humelo Prosody TTS 함수
+// Google Cloud Text-to-Speech (Chirp 3 HD) API 함수
 async function generateTTS(text, outputPath, voiceName) {
   try {
-    console.log(`TTS 생성 중 - 보이스: ${voiceName}, 텍스트: ${text}`);
+    console.log(`TTS 생성 중 - 보이스 ID: ${voiceName}, 텍스트: ${text}`);
+
+    const apiKey = process.env.GOOGLE_TTS_API_KEY;
+    if (!apiKey) {
+      throw new Error('GOOGLE_TTS_API_KEY 환경 변수가 설정되어 있지 않습니다.');
+    }
 
     const response = await axios.post(
-      'https://agitvxptajouhvoatxio.supabase.co/functions/v1/dive-synthesize-v1',
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
       {
-        text: text,
-        mode: 'preset',
-        voiceName: voiceName,
-        emotion: 'neutral',
-        lang: 'ko',
-        outputFormat: 'mp3'
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': process.env.HUMELO_API_KEY
+        input: { text: text },
+        voice: {
+          languageCode: 'ko-KR',
+          name: voiceName
+        },
+        audioConfig: {
+          audioEncoding: 'MP3'
         }
       }
     );
 
-    console.log('TTS API 응답:', JSON.stringify(response.data, null, 2));
-
-    // API 응답에서 audioUrl 확인 (success 필드 대신 audioUrl로 성공 판단)
-    const audioUrl = response.data.audioUrl || response.data.audio_url;
-    if (!audioUrl) {
-      console.error('TTS API 실패 응답:', response.data);
-      throw new Error(`TTS 생성 실패: ${response.data.error || response.data.message || '오디오 URL 없음'}`);
+    // 구글 API는 { audioContent: "베이스64문자열" } 형태로 반환함
+    if (!response.data || !response.data.audioContent) {
+      throw new Error('TTS 응답에 audio 데이터가 없습니다.');
     }
 
-    // 오디오 파일 다운로드
-    const audioResponse = await axios.get(audioUrl, {
-      responseType: 'arraybuffer'
-    });
+    const audioBuffer = Buffer.from(response.data.audioContent, 'base64');
 
-    // 파일 저장
-    fs.writeFileSync(outputPath, audioResponse.data);
+    // 반환된 오디오가 이미 MP3 포맷이므로 바로 저장
+    fs.writeFileSync(outputPath, audioBuffer);
 
-    console.log(`TTS 생성 완료: ${outputPath}`);
+
+    console.log(`TTS 생성 완료 (MP3 변환 포함): ${outputPath}`);
     return true;
   } catch (error) {
     if (error.response) {
@@ -155,16 +158,18 @@ async function generateTTS(text, outputPath, voiceName) {
       console.error('TTS API 에러 응답:', {
         status: error.response.status,
         statusText: error.response.statusText,
-        data: error.response.data
+        data: error.response.data ? error.response.data.toString() : ''
       });
+      throw new Error(`TTS 생성 실패: ${error.response.status}`);
     } else if (error.request) {
       // 요청은 보냈지만 응답을 받지 못한 경우
       console.error('TTS API 응답 없음:', error.message);
+      throw error;
     } else {
       // 요청 설정 중 에러
       console.error('TTS 생성 오류:', error.message);
+      throw error;
     }
-    throw error;
   }
 }
 
@@ -533,7 +538,21 @@ app.delete('/api/problem-sets/:id', (req, res) => {
 // Gemini로 문장 생성
 async function generateWithGemini(inputs, additionalRequests, count, grade) {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3-flash-preview'
+    model: 'gemini-3-flash-preview',
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: {
+        type: 'object',
+        properties: {
+          sentences: {
+            type: 'array',
+            items: { type: 'string' },
+            description: '생성된 받아쓰기 문장들의 배열'
+          }
+        },
+        required: ['sentences']
+      }
+    }
   });
 
   // 학년별 난이도 가이드
@@ -609,10 +628,7 @@ ${additionalRequests}
 5. 쉼표(,)나 따옴표("", '')를 절대 사용하지 않는 문장을 생성하세요.
 6. 모든 문장은 반드시 마침표(.) 또는 물음표(?)로 끝나야 합니다.
 
-반드시 다음 JSON 형식으로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요:
-{
-  "sentences": ["문장1", "문장2", "문장3", ...]
-}`;
+`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
@@ -620,15 +636,8 @@ ${additionalRequests}
 
   console.log('Gemini 원본 응답:', text);
 
-  // JSON 코드 블록이 있다면 제거
-  let jsonText = text.trim();
-  if (jsonText.startsWith('```json')) {
-    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-  } else if (jsonText.startsWith('```')) {
-    jsonText = jsonText.replace(/```\n?/g, '');
-  }
-
-  const data = JSON.parse(jsonText);
+  // 구조화된 출력(Structured Output) 사용으로 항상 깨끗한 JSON이 반환됨
+  const data = JSON.parse(text);
   const sentences = data.sentences.slice(0, count);
 
   console.log('Gemini 파싱된 문장:', sentences);
